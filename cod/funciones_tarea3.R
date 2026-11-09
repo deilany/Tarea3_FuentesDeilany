@@ -13,7 +13,7 @@
                        data = df,
                        FUN = length)
    names(conteo) <- c("fecha", "n.tx")
-   conteos$fecha <- as.Date(conteo$fecha)
+   conteo$fecha <- as.Date(conteo$fecha)
    conteo <- conteo[order(conteo$fecha), ]
    
    n <- nrow(conteo)
