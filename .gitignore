@@ -1,0 +1,10 @@
+# datos pesados (generados por cod/01_datos.R)
+data/*.csv
+
+#clod del repositorio
+base/
+
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
