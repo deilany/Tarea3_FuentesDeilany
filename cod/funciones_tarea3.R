@@ -17,8 +17,8 @@
    conteo <- conteo[order(conteo$fecha), ]
    
    n <- nrow(conteo)
-   media <- rep(NA_real_, N)
-   desv <- rep(NA_real_, N)
+   media <- rep(NA_real_, n)
+   desv <- rep(NA_real_, n)
    
    for (t in seq_len(n)) {
      if(t>ventana){
