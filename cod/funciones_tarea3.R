@@ -22,7 +22,7 @@
    
    for (t in seq_len(n)) {
      if(t>ventana){
-       previos <- conteo$n.tc[(t-ventana):(t-1)] #solo se evaluan dias previos
+       previos <- conteo$n.tx[(t-ventana):(t-1)] #solo se evaluan dias previos
        media[t] <- mean(previos)
        desv[t] <- sd(previos)
      }
@@ -31,7 +31,7 @@
    conteo$media <- media
    conteo$desv <- desv
    conteo$alerta <- conteo$n.tx > media + k.alerta*desv #NA en los primeros dias
-   rownames(conteos) <- NULL
+   rownames(conteo) <- NULL
    
    conteo
  }
