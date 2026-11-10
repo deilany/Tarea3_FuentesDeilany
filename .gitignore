@@ -9,3 +9,4 @@ base/
 .RData
 .Ruserdata
 ~$*
+.RDataTmp
