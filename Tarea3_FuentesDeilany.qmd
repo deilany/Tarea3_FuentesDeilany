@@ -3,3 +3,20 @@ title: "Tarea3_FuentesDeilany"
 format: html
 ---
 
+```{r}
+source("cod/funciones_tarea3.R")
+params <- read.csv("config/parametros_tarea3.csv", sep = ";")
+df <- read.csv("data/transacciones_2025.csv", sep = ";")
+
+ventana  <- as.numeric(params$valor[params$parametro == "ventana"])
+k.alerta <- as.numeric(params$valor[params$parametro == "k.alerta"])
+
+res1 <- alerta.movil(df, ventana, k.alerta)
+res1c <- alerta.movil(df, 10, 1.5)
+```
+
+```{r}
+cat("RESULTADO_1A =", sum(res1$alerta, na.rm = TRUE), "\n")
+cat("RESULTADO_1B =", format(res1$fecha[which(res1$alerta)[1]]), "\n")
+cat("RESULTADO_1C =", sum(res1c$alerta, na.rm = TRUE), "\n")
+```

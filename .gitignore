@@ -8,3 +8,5 @@ base/
 .Rhistory
 .RData
 .Ruserdata
+~$*
+.RDataTmp
