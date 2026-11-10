@@ -35,3 +35,16 @@
    
    conteo
  }
+ 
+ 
+ # función benford.mad(x)
+ # Recibe: x vector numerico de montos(positivos)
+ # Devuelve: La MAD (desviacion absoluta media) contra la Ley de Benford
+ 
+ benford.mad <- function(x) {
+   montos.validos <- x[!is.na(x) & x > 0]
+   primer.digito <- montos.validos%/% 10^floor(log10(montos.validos)) # es el primer digito con valores del 1 al 9
+   proporcion.observada <- as.numeric(table(factor(primer.digito, levels = 1:9))) / length(primer.digito)
+   proporcion.benford <- log10(1+1 / (1:9)) # proporcion de Benford
+   mean(abs(proporcion.observada - proporcion.benford)) 
+ }
