@@ -85,3 +85,23 @@ grafico.ej2
 
 Conclusión: 
 Antes de concluir que es fraude, se debe tener en cuentra que muestras pequeñas la MAD sube por azar, de fornma que cantonces con mayor MAD tiene pocas transacciones.
+
+
+```{r}
+tasa.anual    <- as.numeric(params$valor[params$parametro == "tasa.anual"])
+canal.interes <- params$valor[params$parametro == "canal.interes"]
+
+res3   <- valor.acumulado(df, tasa.anual, canal.interes)  #Pregunta 3A y 3B
+res3c  <- valor.acumulado(df, 0.06, "App") # Pregunta 3C
+
+```
+
+
+```{r}
+
+cat("RESULTADO_3A =", format(round(res3$va, 2), nsmall = 2, scientific = FALSE), "\n")
+cat("RESULTADO_3B =", format(round(res3$interes, 2), nsmall = 2, scientific = FALSE), "\n")
+cat("RESULTADO_3C =", format(round(res3c$va, 2), nsmall = 2, scientific = FALSE), "\n")
+res3$tabla
+```
+
