@@ -35,3 +35,47 @@
    
    conteo
  }
+ 
+ 
+ # función benford.mad(x)
+ # Recibe: x vector numerico de montos(positivos)
+ # Devuelve: La MAD (desviacion absoluta media) contra la Ley de Benford
+ 
+ benford.mad <- function(x) {
+   montos.validos <- x[!is.na(x) & x > 0]
+   primer.digito <- montos.validos%/% 10^floor(log10(montos.validos)) # es el primer digito con valores del 1 al 9
+   proporcion.observada <- as.numeric(table(factor(primer.digito, levels = 1:9))) / length(primer.digito)
+   proporcion.benford <- log10(1+1 / (1:9)) # proporcion de Benford
+   mean(abs(proporcion.observada - proporcion.benford)) 
+ }
+ 
+ # Funcion benford.canton(x)
+ # Recibe: 
+ #         df: un data frame de transacciones (cod_canton, canal, monto_crc)
+ #         canal: nombre del canal a auditar
+ #         cantones: data frame de cantones (cod_canton, canton, provincia)
+ # Devuelve:
+ #         data frame por canton (cod_canton, canton, n, mad. clase) ordenado de mayor a menor MAD
+ 
+ benford.canton <- function(df, canal, cantones) {
+   tx.canal <- df[df$canal == canal, ]
+   codigos.canton <- sort(unique(tx.canal$cod_canton))
+   
+   tabla.canton <- data.frame(
+     cod_canton = codigos.canton,
+     n = sapply(codigos.canton, function(codigo) sum(tx.canal$cod_canton == codigo)),
+     mad = sapply(codigos.canton, function(codigo) benford.mad(tx.canal$monto_crc[tx.canal$cod_canton == codigo]))
+   )
+   
+   tabla.canton$clase <- as.character(cut(tabla.canton$mad,
+                                          breaks = c(-Inf, 0.006, 0.012, 0.015, Inf),
+                                          labels = c("conformidad cercana", "conformidad aceptable",
+                                                     "conformidad marginal", "no conformidad")))
+   
+   tabla.canton <- merge(tabla.canton, cantones[, c("cod_canton", "canton")], by = "cod_canton")
+   
+   tabla.canton <- tabla.canton[order(-tabla.canton$mad), c("cod_canton", "canton", "n", "mad", "clase")]
+   
+   rownames(tabla.canton) <- NULL
+   tabla.canton
+ }

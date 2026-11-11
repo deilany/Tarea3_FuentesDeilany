@@ -12,7 +12,7 @@ ventana  <- as.numeric(params$valor[params$parametro == "ventana"])
 k.alerta <- as.numeric(params$valor[params$parametro == "k.alerta"])
 
 res1 <- alerta.movil(df, ventana, k.alerta)
-res1c <- alerta.movil(df, 10, 1.5)
+res1c <- alerta.movil(df, 7, 2)
 ```
 
 ```{r}
@@ -20,3 +20,68 @@ cat("RESULTADO_1A =", sum(res1$alerta, na.rm = TRUE), "\n")
 cat("RESULTADO_1B =", format(res1$fecha[which(res1$alerta)[1]]), "\n")
 cat("RESULTADO_1C =", sum(res1c$alerta, na.rm = TRUE), "\n")
 ```
+
+```{r}
+library(ggplot2)
+dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
+
+grafico.ej1 <- ggplot(res1, aes(x = fecha, y = n.tx)) +
+  geom_line(color = "grey40") +
+  geom_point(data = subset(res1, alerta %in% TRUE),
+             color = "red", size = 2) +
+  labs(title = "Transacciones diarias y dias con alerta",
+       x = "Fecha", y = "Numero de transacciones") +
+  theme_minimal()
+
+ggsave("info/figuras/ej1_alertas.png", grafico.ej1, width = 9, height = 5, dpi = 150)
+grafico.ej1
+```
+
+```{r}
+cantones <- read.csv("data/cantones.csv")   # este archivo va con coma
+canal.benford <- params$valor[params$parametro == "canal.benford"]
+
+#Pregunta 2A
+mad.canal <- benford.mad(df$monto_crc[df$canal == canal.benford]) 
+
+# Pregunta 2B y 2C
+tabla.benford <- benford.canton(df, canal.benford, cantones) 
+
+# Pregunta 2D
+tabla.benford.web <- benford.canton(df, "Web", cantones) 
+```
+
+
+```{r}
+cat("RESULTADO_2A =", format(round(mad.canal, 4), nsmall = 4), "\n")
+cat("RESULTADO_2B =", tabla.benford$canton[1], "\n")
+cat("RESULTADO_2C =", sum(tabla.benford$mad > 0.015), "\n")
+cat("RESULTADO_2D =", tabla.benford.web$canton[1], "\n")
+head(tabla.benford)
+```
+```{r}
+montos.canal  <- df$monto_crc[df$canal == canal.benford]
+montos.canal  <- montos.canal[!is.na(montos.canal) & montos.canal > 0]
+primer.digito <- montos.canal %/% 10^floor(log10(montos.canal))
+
+tabla.grafico <- data.frame(
+  digito  = 1:9,
+  p       = as.numeric(table(factor(primer.digito, levels = 1:9))) / length(primer.digito),
+  benford = log10(1 + 1 / (1:9))
+)
+
+grafico.ej2 <- ggplot(tabla.grafico, aes(x = digito)) +
+  geom_col(aes(y = p), fill = "gray54") +
+  geom_line(aes(y = benford), color = "red", linewidth = 1) +
+  geom_point(aes(y = benford), color = "red") +
+  scale_x_continuous(breaks = 1:9) +
+  labs(title = paste("Primer digito en el canal", canal.benford, "vs. ley de Benford"),
+       x = "Primer digito", y = "Proporcion") +
+  theme_minimal()
+
+ggsave("info/figuras/ej2_benford.png", grafico.ej2, width = 9, height = 5, dpi = 150)
+grafico.ej2
+```
+
+Conclusión: 
+Antes de concluir que es fraude, se debe tener en cuentra que muestras pequeñas la MAD sube por azar, de fornma que cantonces con mayor MAD tiene pocas transacciones.
