@@ -59,5 +59,28 @@ cat("RESULTADO_2C =", sum(tabla.benford$mad > 0.015), "\n")
 cat("RESULTADO_2D =", tabla.benford.web$canton[1], "\n")
 head(tabla.benford)
 ```
+```{r}
+montos.canal  <- df$monto_crc[df$canal == canal.benford]
+montos.canal  <- montos.canal[!is.na(montos.canal) & montos.canal > 0]
+primer.digito <- montos.canal %/% 10^floor(log10(montos.canal))
+
+tabla.grafico <- data.frame(
+  digito  = 1:9,
+  p       = as.numeric(table(factor(primer.digito, levels = 1:9))) / length(primer.digito),
+  benford = log10(1 + 1 / (1:9))
+)
+
+grafico.ej2 <- ggplot(tabla.grafico, aes(x = digito)) +
+  geom_col(aes(y = p), fill = "steelblue") +
+  geom_line(aes(y = benford), color = "red", linewidth = 1) +
+  geom_point(aes(y = benford), color = "red") +
+  scale_x_continuous(breaks = 1:9) +
+  labs(title = paste("Primer digito en el canal", canal.benford, "vs. ley de Benford"),
+       x = "Primer digito", y = "Proporcion") +
+  theme_minimal()
+
+ggsave("info/figuras/ej2_benford.png", grafico.ej2, width = 9, height = 5, dpi = 150)
+grafico.ej2
+```
 
 
