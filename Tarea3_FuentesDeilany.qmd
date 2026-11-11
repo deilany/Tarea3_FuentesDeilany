@@ -12,7 +12,7 @@ ventana  <- as.numeric(params$valor[params$parametro == "ventana"])
 k.alerta <- as.numeric(params$valor[params$parametro == "k.alerta"])
 
 res1 <- alerta.movil(df, ventana, k.alerta)
-res1c <- alerta.movil(df, 10, 1.5)
+res1c <- alerta.movil(df, 7, 2)
 ```
 
 ```{r}
@@ -20,3 +20,27 @@ cat("RESULTADO_1A =", sum(res1$alerta, na.rm = TRUE), "\n")
 cat("RESULTADO_1B =", format(res1$fecha[which(res1$alerta)[1]]), "\n")
 cat("RESULTADO_1C =", sum(res1c$alerta, na.rm = TRUE), "\n")
 ```
+```{r}
+cantones <- read.csv("data/cantones.csv")   # este archivo va con coma
+canal.benford <- params$valor[params$parametro == "canal.benford"]
+
+#Pregunta 2A
+mad.canal <- benford.mad(df$monto_crc[df$canal == canal.benford]) 
+
+# Pregunta 2B y 2C
+tabla.benford <- benford.canton(df, canal.benford, cantones) 
+
+# Pregunta 2D
+tabla.benford.web <- benford.canton(df, "Web", cantones) 
+```
+
+
+```{r}
+cat("RESULTADO_2A =", format(round(mad.canal, 4), nsmall = 4), "\n")
+cat("RESULTADO_2B =", tabla.benford$canton[1], "\n")
+cat("RESULTADO_2C =", sum(tabla.benford$mad > 0.015), "\n")
+cat("RESULTADO_2D =", tabla.benford.web$canton[1], "\n")
+head(tabla.benford)
+```
+
+
