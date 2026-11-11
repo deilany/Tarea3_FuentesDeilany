@@ -79,3 +79,40 @@
    rownames(tabla.canton) <- NULL
    tabla.canton
  }
+ 
+ 
+ # funcion valor.acumulado(df, tasa.anual, canal)
+ # Recibe:
+ #        df: data frame de transacciones (fecha, canal, monto_crc)
+ #        tasa.anual: tasa efectiva anual en decimal
+ #        canal: nombre del canal cuyos montos se depositan
+ # Devuelve: 
+ #        lista con:
+ #                  tabla data frame: con mes (1 a 12), monto (total del canal
+ #                        en el mes) y factor ((1 + tasa.mensual)^(12 - mes))
+ #                  tasa.mensual:  tasa efectiva mensual equivalente
+ #                  va: valor acumulado al 31 de diciembre
+ #                  interes: intereses ganados (va - suma de montos)
+ 
+ valor.acumulado <- function(df, tasa.anual, canal) {
+   tx.canal <- df[df$canal == canal, ]
+   mes.tx <- as.numeric(format(as.Date(tx.canal$fecha), "%m"))
+   
+   monto.mes <- sapply(1:12, function(mes) sum(tx.canal$monto_crc[mes.tx == mes]))
+   
+   tasa.mensual <- (1 + tasa.anual)^(1 / 12) - 1
+   
+   tabla.va <- data.frame(
+     mes = 1:12,
+     monto  = monto.mes,
+     factor = (1 + tasa.mensual)^(12 - (1:12))
+   )
+   
+   va.total <- sum(tabla.va$monto * tabla.va$factor)
+   interes.total <- va.total - sum(tabla.va$monto)
+   
+   list(tabla = tabla.va,
+        tasa.mensual = tasa.mensual,
+        va = va.total,
+        interes = interes.total)
+ }
