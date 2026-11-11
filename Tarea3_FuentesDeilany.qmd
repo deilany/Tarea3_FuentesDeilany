@@ -71,7 +71,7 @@ tabla.grafico <- data.frame(
 )
 
 grafico.ej2 <- ggplot(tabla.grafico, aes(x = digito)) +
-  geom_col(aes(y = p), fill = "steelblue") +
+  geom_col(aes(y = p), fill = "gray54") +
   geom_line(aes(y = benford), color = "red", linewidth = 1) +
   geom_point(aes(y = benford), color = "red") +
   scale_x_continuous(breaks = 1:9) +
@@ -83,4 +83,5 @@ ggsave("info/figuras/ej2_benford.png", grafico.ej2, width = 9, height = 5, dpi =
 grafico.ej2
 ```
 
-
+Conclusión: 
+Antes de concluir que es fraude, se debe tener en cuentra que muestras pequeñas la MAD sube por azar, de fornma que cantonces con mayor MAD tiene pocas transacciones.
