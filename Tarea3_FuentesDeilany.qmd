@@ -20,6 +20,23 @@ cat("RESULTADO_1A =", sum(res1$alerta, na.rm = TRUE), "\n")
 cat("RESULTADO_1B =", format(res1$fecha[which(res1$alerta)[1]]), "\n")
 cat("RESULTADO_1C =", sum(res1c$alerta, na.rm = TRUE), "\n")
 ```
+
+```{r}
+library(ggplot2)
+dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
+
+grafico.ej1 <- ggplot(res1, aes(x = fecha, y = n.tx)) +
+  geom_line(color = "grey40") +
+  geom_point(data = subset(res1, alerta %in% TRUE),
+             color = "red", size = 2) +
+  labs(title = "Transacciones diarias y dias con alerta",
+       x = "Fecha", y = "Numero de transacciones") +
+  theme_minimal()
+
+ggsave("info/figuras/ej1_alertas.png", grafico.ej1, width = 9, height = 5, dpi = 150)
+grafico.ej1
+```
+
 ```{r}
 cantones <- read.csv("data/cantones.csv")   # este archivo va con coma
 canal.benford <- params$valor[params$parametro == "canal.benford"]
