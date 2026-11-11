@@ -1,33 +1,70 @@
 ---
 title: "Tarea3_FuentesDeilany"
 format: html
+embed-resources: true
 ---
 
 ```{r}
+#| echo: false
+#| message: false
+#| warning: false
 source("cod/funciones_tarea3.R")
+library(ggplot2)
+
 params <- read.csv("config/parametros_tarea3.csv", sep = ";")
 df <- read.csv("data/transacciones_2025.csv", sep = ";")
+cantones <- read.csv("data/cantones.csv") 
 
-ventana  <- as.numeric(params$valor[params$parametro == "ventana"])
+ventana <- as.numeric(params$valor[params$parametro == "ventana"])
 k.alerta <- as.numeric(params$valor[params$parametro == "k.alerta"])
+canal.benford <- params$valor[params$parametro == "canal.benford"]
+tasa.anual <- as.numeric(params$valor[params$parametro == "tasa.anual"])
+canal.interes <- params$valor[params$parametro == "canal.interes"]
 
-res1 <- alerta.movil(df, ventana, k.alerta)
-res1c <- alerta.movil(df, 7, 2)
+# Ejercicio 1
+# Pregunta 1A
+resultado1A <- alerta.movil(df, ventana, k.alerta)
+# Pregunta 1C
+resultado1c <- alerta.movil(df, 7, 2)
+
+# Ejercicio 2
+#Pregunta 2A
+mad.canal <- benford.mad(df$monto_crc[df$canal == canal.benford]) 
+# Pregunta 2B y 2C
+tabla.benford <- benford.canton(df, canal.benford, cantones) 
+# Pregunta 2D
+tabla.benford.web <- benford.canton(df, "Web", cantones) 
+
+# Ejercicio 3
+#Pregunta 3A y 3B
+resultado3AB   <- valor.acumulado(df, tasa.anual, canal.interes)
+# Pregunta 3C
+resultado3c  <- valor.acumulado(df, 0.06, "App") 
 ```
 
-```{r}
-cat("RESULTADO_1A =", sum(res1$alerta, na.rm = TRUE), "\n")
-cat("RESULTADO_1B =", format(res1$fecha[which(res1$alerta)[1]]), "\n")
-cat("RESULTADO_1C =", sum(res1c$alerta, na.rm = TRUE), "\n")
-```
 
 ```{r}
-library(ggplot2)
+#| echo: false
+cat("RESULTADO_1A =", sum(resultado1A$alerta, na.rm = TRUE), "\n")
+cat("RESULTADO_1B =", format(resultado1A$fecha[which(resultado1A$alerta)[1]]), "\n")
+cat("RESULTADO_1C =", sum(resultado1c$alerta, na.rm = TRUE), "\n")
+cat("RESULTADO_2A =", format(round(mad.canal, 4), nsmall = 4), "\n")
+cat("RESULTADO_2B =", tabla.benford$canton[1], "\n")
+cat("RESULTADO_2C =", sum(tabla.benford$mad > 0.015), "\n")
+cat("RESULTADO_2D =", tabla.benford.web$canton[1], "\n")
+cat("RESULTADO_3A =", format(round(resultado3AB$va, 2), nsmall = 2, scientific = FALSE), "\n")
+cat("RESULTADO_3B =", format(round(resultado3AB$interes, 2), nsmall = 2, scientific = FALSE), "\n")
+cat("RESULTADO_3C =", format(round(resultado3c$va, 2), nsmall = 2, scientific = FALSE), "\n")
+```
+## Ejercicio 1: Alertas por ventana móvil
+
+```{r}
+#| echo: false
 dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
 
-grafico.ej1 <- ggplot(res1, aes(x = fecha, y = n.tx)) +
+grafico.ej1 <- ggplot(resultado1A, aes(x = fecha, y = n.tx)) +
   geom_line(color = "grey40") +
-  geom_point(data = subset(res1, alerta %in% TRUE),
+  geom_point(data = subset(resultado1A, alerta %in% TRUE),
              color = "red", size = 2) +
   labs(title = "Transacciones diarias y dias con alerta",
        x = "Fecha", y = "Numero de transacciones") +
@@ -37,31 +74,23 @@ ggsave("info/figuras/ej1_alertas.png", grafico.ej1, width = 9, height = 5, dpi =
 grafico.ej1
 ```
 
+## Ejercicio 2: Ley de Bandford por cantón
+
 ```{r}
-cantones <- read.csv("data/cantones.csv")   # este archivo va con coma
-canal.benford <- params$valor[params$parametro == "canal.benford"]
-
-#Pregunta 2A
-mad.canal <- benford.mad(df$monto_crc[df$canal == canal.benford]) 
-
-# Pregunta 2B y 2C
-tabla.benford <- benford.canton(df, canal.benford, cantones) 
-
-# Pregunta 2D
-tabla.benford.web <- benford.canton(df, "Web", cantones) 
+#| echo: false
+knitr::kable(
+  head(tabla.benford, 10),
+  digits = 4,
+  align = "rlrrl",
+  col.names = c("Código", "Cantón", "n", "MAD", "Clase"),
+  caption = paste("Cantones con mayor MAD en el canal", canal.benford)
+)
 ```
 
-
 ```{r}
-cat("RESULTADO_2A =", format(round(mad.canal, 4), nsmall = 4), "\n")
-cat("RESULTADO_2B =", tabla.benford$canton[1], "\n")
-cat("RESULTADO_2C =", sum(tabla.benford$mad > 0.015), "\n")
-cat("RESULTADO_2D =", tabla.benford.web$canton[1], "\n")
-head(tabla.benford)
-```
-```{r}
-montos.canal  <- df$monto_crc[df$canal == canal.benford]
-montos.canal  <- montos.canal[!is.na(montos.canal) & montos.canal > 0]
+#| echo: false
+montos.canal <- df$monto_crc[df$canal == canal.benford]
+montos.canal <- montos.canal[!is.na(montos.canal) & montos.canal > 0]
 primer.digito <- montos.canal %/% 10^floor(log10(montos.canal))
 
 tabla.grafico <- data.frame(
@@ -86,29 +115,25 @@ grafico.ej2
 Conclusión: 
 Antes de concluir que es fraude, se debe tener en cuentra que muestras pequeñas la MAD sube por azar, de fornma que cantonces con mayor MAD tiene pocas transacciones.
 
+## Ejercicio 3: Valor acumulado con interés
 
 ```{r}
-tasa.anual    <- as.numeric(params$valor[params$parametro == "tasa.anual"])
-canal.interes <- params$valor[params$parametro == "canal.interes"]
-
-res3   <- valor.acumulado(df, tasa.anual, canal.interes)  #Pregunta 3A y 3B
-res3c  <- valor.acumulado(df, 0.06, "App") # Pregunta 3C
-
+#| echo: false
+knitr::kable(
+  resultado3AB$tabla,
+  digits = c(0, 0, 6),
+  format.args = list(big.mark = " ", scientific = FALSE),
+  col.names = c("Mes", "Monto (₡)", "Factor"),
+  caption = paste("Depósitos mensuales del canal", canal.interes)
+)
 ```
 
-
 ```{r}
-
-cat("RESULTADO_3A =", format(round(res3$va, 2), nsmall = 2, scientific = FALSE), "\n")
-cat("RESULTADO_3B =", format(round(res3$interes, 2), nsmall = 2, scientific = FALSE), "\n")
-cat("RESULTADO_3C =", format(round(res3c$va, 2), nsmall = 2, scientific = FALSE), "\n")
-res3$tabla
-```
-```{r}
+#| echo: false
 tabla.grafico3 <- data.frame(
-  mes = rep(res3$tabla$mes, 2),
+  mes = rep(resultado3AB$tabla$mes, 2),
   tipo = rep(c("Monto mensual", "Valor acumulado al 31-dic"), each = 12),
-  valor = c(res3$tabla$monto, res3$tabla$monto * res3$tabla$factor)
+  valor = c(resultado3AB$tabla$monto, resultado3AB$tabla$monto * resultado3AB$tabla$factor)
 )
 
 grafico.ej3 <- ggplot(tabla.grafico3, aes(x = factor(mes), y = valor, fill = tipo)) +
