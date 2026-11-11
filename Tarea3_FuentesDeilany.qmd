@@ -104,4 +104,21 @@ cat("RESULTADO_3B =", format(round(res3$interes, 2), nsmall = 2, scientific = FA
 cat("RESULTADO_3C =", format(round(res3c$va, 2), nsmall = 2, scientific = FALSE), "\n")
 res3$tabla
 ```
+```{r}
+tabla.grafico3 <- data.frame(
+  mes = rep(res3$tabla$mes, 2),
+  tipo = rep(c("Monto mensual", "Valor acumulado al 31-dic"), each = 12),
+  valor = c(res3$tabla$monto, res3$tabla$monto * res3$tabla$factor)
+)
+
+grafico.ej3 <- ggplot(tabla.grafico3, aes(x = factor(mes), y = valor, fill = tipo)) +
+  geom_col(position = "dodge") +
+  scale_y_continuous(labels = function(x) format(x, big.mark = " ", scientific = FALSE)) +
+  labs(title = paste("Canal", canal.interes, ": monto mensual y valor acumulado"),
+       x = "Mes", y = "Colones", fill = NULL) +
+  theme_minimal()
+
+ggsave("info/figuras/ej3_valor_acumulado.png", grafico.ej3, width = 9, height = 5, dpi = 150)
+grafico.ej3
+```
 
